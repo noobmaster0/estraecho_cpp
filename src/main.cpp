@@ -39,6 +39,8 @@ std::vector<Button> buttons;
 TileMap map;
 Player player(25.f,sf::Vector2f(75,50));
 
+float sound = 0;
+
 int main()
 {
 #ifdef APPLE
@@ -51,9 +53,9 @@ int main()
 
 	sf::Font font;
 #ifdef __linux__
-  if (!font.loadFromFile("/usr/share/fonts/TTF/arial.ttf"))
+	if (!font.loadFromFile("/usr/share/fonts/TTF/arial.ttf"))
 #else 
-  if (!font.loadFromFile("C:/Windows/fonts/Arial.ttf"))
+	if (!font.loadFromFile("C:/Windows/fonts/Arial.ttf"))
 #endif
 	{
 		std::cout << "Failed to Load Arial.ttf";
@@ -64,7 +66,7 @@ int main()
 	if (!dirt.loadFromFile("resources/dirt.png"))
 		return 1;
 	dirt.setRepeated(true);
-	
+
 	if (!character.loadFromFile("resources/character.png"))
 		return 1;
 
@@ -78,15 +80,16 @@ int main()
 
 	sf::Text test("", font, 30);
 
-	sf::View cam({200,200},{1000,1000});
+	sf::View cam({ 200,200 }, { 1000,1000 });
 
 	loadLevel();
 
 
-	sf::RectangleShape outline;
-	outline.setOutlineColor(sf::Color::Red);
-	outline.setOutlineThickness(1);
-	outline.setFillColor(sf::Color::Transparent);
+	sf::CircleShape soundCircle(50);
+	soundCircle.setOutlineColor(sf::Color::Red);
+	soundCircle.setOutlineThickness(1);
+	soundCircle.setFillColor(sf::Color::Transparent);
+	soundCircle.setOrigin(25, 25);
 
 	float dt = 0;
 	sf::Clock clock;
@@ -114,25 +117,45 @@ int main()
 
 		player.velocity = sf::Vector2f(0, 0);
 
+		float pSpeed = playerSpeed;
+
+		if (keyboard.isKeyPressed(sf::Keyboard::LShift))
+		{
+			pSpeed *= 2;
+		}
+
+		sf::Vector2f mV = { 0,0 };
+
 		if (keyboard.isKeyPressed(sf::Keyboard::Key::W))
 		{
-			player.velocity += sf::Vector2f(0, -playerSpeed);
+			mV += sf::Vector2f(0, -1);
 		}
 
 		if (keyboard.isKeyPressed(sf::Keyboard::Key::S))
 		{
-			player.velocity += sf::Vector2f(0, playerSpeed);
+			mV += sf::Vector2f(0, 1);
 		}
 
 		if (keyboard.isKeyPressed(sf::Keyboard::Key::D))
 		{
-			player.velocity += sf::Vector2f(playerSpeed, 0);
+			mV += sf::Vector2f(1, 0);
 		}
 
 		if (keyboard.isKeyPressed(sf::Keyboard::Key::A))
 		{
-			player.velocity += sf::Vector2f(-playerSpeed, 0);
+			mV += sf::Vector2f(-1, 0);
 		}
+
+		float l = dist({ 0,0 }, mV);
+		if (l != 0)
+		{
+			mV /= l;
+		}
+		
+		mV *= pSpeed;
+		player.velocity += mV;
+
+		sound = dist({0,0}, player.velocity)*30;
 
 		map.draw(window, dirt);
 
@@ -141,9 +164,9 @@ int main()
 			polygon.draw(window);
 		}
 
-		for (auto& wall : walls) {
-			wall.draw(window);
-		}
+		//for (auto& wall : walls) {
+		//	wall.draw(window);
+		//}
 
 		for (auto& wall : walls) {
 			wall.closestPoint(player, dt);
@@ -183,6 +206,11 @@ int main()
 		}
 		*/
 
+		soundCircle.setRadius(sound);
+		soundCircle.setOrigin(sound,sound);
+		soundCircle.setPosition(player.shape.getPosition() + sf::Vector2f(1, 1) * r);
+		window.draw(soundCircle);
+
 		sf::Vector2f playPos = player.shape.getPosition() + sf::Vector2f(1, 1) * r;
 		sf::Vector2f camPos = { 0, 0 };
 
@@ -221,7 +249,7 @@ int main()
 		}
 
 		cam.setCenter(camPos);
-		
+
 		window.setView(cam);
 		window.display();
 		dt = clock.restart().asSeconds();
