@@ -155,8 +155,6 @@ int main()
 		mV *= pSpeed;
 		player.velocity += mV;
 
-		sound = dist({0,0}, player.velocity)*30;
-
 		map.draw(window, dirt);
 
 		for (auto& polygon : polygons)
@@ -205,6 +203,8 @@ int main()
 			loadLevel();
 		}
 		*/
+
+		sound = dist({ 0,0 }, player.velocity) * 30;
 
 		soundCircle.setRadius(sound);
 		soundCircle.setOrigin(sound,sound);
