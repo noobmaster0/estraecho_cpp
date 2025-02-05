@@ -17,6 +17,7 @@
 #define resY 1000
 #define PPM 50.f // pixels per meter
 #define cellSize 50
+#define TSS 16 // tile sprite size
 
 sf::Texture character;
 
@@ -81,6 +82,8 @@ int main()
 	sf::Text test("", font, 30);
 
 	sf::View cam({ 200,200 }, { 1000,1000 });
+
+	map.TextureMap = dirt;
 
 	loadLevel();
 
@@ -155,7 +158,7 @@ int main()
 		mV *= pSpeed;
 		player.velocity += mV;
 
-		map.draw(window, dirt);
+		map.draw(window);
 
 		for (auto& polygon : polygons)
 		{
@@ -296,6 +299,14 @@ int loadLevel()
 		return 1;
 	}
 
+	sf::Texture mapTexture;
+	if (!mapTexture.loadFromFile("resources/" + std::to_string(lvlCtr) + "/TileMap.png"))
+	{
+		return 1;
+	}
+
+	map.TextureMap = mapTexture;
+
 	sf::Vector2u size = sf::Vector2u(mapMask.getSize().x, mapMask.getSize().y);
 
 	mapSize = size;
@@ -426,14 +437,11 @@ sf::Vector2f Wall::closestPoint(Player& ball, float dt)
 	sf::Vector2f other = ball.shape.getPosition() + sf::Vector2f(ball.radius, ball.radius);
 	float m = (p2.y - p1.y) / (p2.x - p1.x);
 
-	bool vertical = false;
-
 	sf::Vector2f closeP;
 	if (p2.x == p1.x) {
 		// Vertical line case
 		closeP.x = p1.x;
 		closeP.y = other.y;
-		vertical = true;
 	}
 	else {
 		float x = (other.x + other.y * m + m * m * p1.x - m * p1.y) / (m * m + 1);
@@ -511,6 +519,7 @@ void Polygon::draw(sf::RenderWindow& window)
 
 TileMap::TileMap(bool* map)
 {
+	TileMap::TextureMap = sf::Texture();
 	int height = 1000 / 5, width = 1000 / 5;
 	sf::Vector2u tileSize = { 5,5 };
 
@@ -530,10 +539,10 @@ TileMap::TileMap(bool* map)
 	return;
 }
 
-void TileMap::draw(sf::RenderWindow& window, sf::Texture dirt)
+void TileMap::draw(sf::RenderWindow& window)
 {
 	sf::RenderStates states;
-	states.texture = &dirt;
+	states.texture = &TextureMap;
 
 	window.draw(m_vertices, states);
 }
@@ -574,8 +583,12 @@ void TileMap::recalculate() {
 			triangles[4].position = sf::Vector2f((i + 1) * tileSize.x, j * tileSize.y);
 			triangles[5].position = sf::Vector2f((i + 1) * tileSize.x, (j + 1) * tileSize.y);
 
-			for (int k = 0; k < 6; ++k)
-				triangles[k].texCoords = triangles[k].position;
+			triangles[0].texCoords = sf::Vector2f( map[i + j * width] * TSS,map[i + j * width] * TSS );
+			triangles[1].texCoords = sf::Vector2f( (map[i + j * width] + 1) * TSS,map[i + j * width] * TSS );
+			triangles[2].texCoords = sf::Vector2f((map[i + j * width]) * TSS,(map[i + j * width] + 1) * TSS );
+			triangles[3].texCoords = sf::Vector2f((map[i + j * width]) * TSS,(map[i + j * width] + 1) * TSS );
+			triangles[4].texCoords = sf::Vector2f((map[i + j * width] + 1) * TSS,(map[i + j * width]) * TSS );
+			triangles[5].texCoords = sf::Vector2f((map[i + j * width] + 1) * TSS,(map[i + j * width] + 1) * TSS );
 
 			// Store adjacent cell states
 			bool above = (j > 0) ? map[i + (j - 1) * width] : true;

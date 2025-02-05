@@ -9,6 +9,13 @@ public:
 	Player(float radius, sf::Vector2f position);
 	void update(float dt, sf::RenderWindow& window);
 	void draw(sf::RenderWindow& window);
+	enum class AState {
+		WALKINGUP,
+		WALKINGDOWN,
+		WALKINGLEFT,
+		WALKINGRIGHT,
+		IDLE
+	};
 	sf::Vector2f velocity;
 	sf::CircleShape shape;
 	float radius;
@@ -49,10 +56,11 @@ public:
 	sf::VertexArray m_vertices;
 	std::vector<int> pointsI;
 	std::vector<int> wallsI;
+	sf::Texture& TextureMap = sf::Texture();
 	bool map[500*500];
 	TileMap(bool* map);
 	TileMap() {};
-	void draw(sf::RenderWindow& window, sf::Texture dirt);
+	void draw(sf::RenderWindow& window);
 	void recalculate();
 };
 
