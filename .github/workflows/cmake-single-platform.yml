@@ -26,14 +26,9 @@ jobs:
             os: ubuntu-latest,
             build_type: "Release", cc: "gcc", cxx: "g++"
           }
-        - {
-            name: "macOS Latest Clang", artifact: "macOS.tar.xz",
-            os: macos-latest,
-            build_type: "Release", cc: "clang", cxx: "clang++"
-          }
 
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v4
 
     - name: Download Ninja and CMake
       id: cmake_and_ninja
