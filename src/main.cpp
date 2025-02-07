@@ -20,6 +20,7 @@
 #define TSS 16 // tile sprite size
 
 sf::Texture character;
+sf::Texture dirt;
 
 const float playerSpeed = 0.1f*PPM;
 int idCounter = 0;
@@ -63,7 +64,6 @@ int main()
 		return 1;
 	}
 
-	sf::Texture dirt;
 	if (!dirt.loadFromFile("resources/dirt.png"))
 		return 1;
 	dirt.setRepeated(true);
@@ -519,7 +519,7 @@ void Polygon::draw(sf::RenderWindow& window)
 
 TileMap::TileMap(bool* map)
 {
-	TileMap::TextureMap = sf::Texture();
+	TextureMap = dirt;
 	int height = 1000 / 5, width = 1000 / 5;
 	sf::Vector2u tileSize = { 5,5 };
 
