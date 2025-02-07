@@ -21,11 +21,6 @@ jobs:
             os: windows-latest,
             build_type: "Release", cc: "gcc", cxx: "g++"
           }
-        - {
-            name: "Ubuntu Latest GCC", artifact: "Linux.tar.xz",
-            os: ubuntu-latest,
-            build_type: "Release", cc: "gcc", cxx: "g++"
-          }
 
     steps:
     - uses: actions/checkout@v4
@@ -200,10 +195,6 @@ jobs:
           }
         - {
             name: "Windows Latest MinGW", artifact: "Windows-MinGW.tar.xz",
-            os: ubuntu-latest
-          }
-        - {
-            name: "Ubuntu Latest GCC", artifact: "Linux.tar.xz",
             os: ubuntu-latest
           }
     needs: release
