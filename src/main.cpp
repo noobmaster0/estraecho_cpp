@@ -304,7 +304,7 @@ int loadLevel()
 	{
 		return 1;
 	}
-
+	
 	map.TextureMap = mapTexture;
 
 	sf::Vector2u size = sf::Vector2u(mapMask.getSize().x, mapMask.getSize().y);
@@ -517,9 +517,9 @@ void Polygon::draw(sf::RenderWindow& window)
 	window.draw(shape);
 }
 
-TileMap::TileMap(bool* map)
+TileMap::TileMap(bool* map, sf::Texture& Texture)
 {
-	TextureMap = dirt;
+	TextureMap = Texture;
 	int height = 1000 / 5, width = 1000 / 5;
 	sf::Vector2u tileSize = { 5,5 };
 
