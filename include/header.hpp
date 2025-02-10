@@ -59,7 +59,6 @@ public:
 	sf::Texture& TextureMap;
 	bool map[500*500];
 	TileMap(bool* map, sf::Texture& Texture);
-	TileMap() {};
 	void draw(sf::RenderWindow& window);
 	void recalculate();
 };
