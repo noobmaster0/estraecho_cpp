@@ -311,26 +311,30 @@ int loadLevel()
 
 	mapSize = size;
 
+	int mapT[500*500];
+
 	for (unsigned int i = 0; i < 500; ++i) {
 		for (unsigned int j = 0; j < 500; ++j) {
 			if (i < size.x && j < size.y)
 			{
 				if (mapMask.getPixel(i, j).r <= 255 / 2 && mapMask.getPixel(i, j).g <= 255 / 2 && mapMask.getPixel(i, j).b <= 255 / 2)
 				{
-					map.map[i + j * 500] = false;
+					mapT[i + j * 500] = false;
 				}
 				else
 				{
-					map.map[i + j * 500] = true;
+					mapT[i + j * 500] = true;
 				}
 			}
 			else
 			{
-				map.map[i + j * 500] = false;
+				mapT[i + j * 500] = false;
 			}
 		}
 	}
 
+	map = TileMap(mapT, mapTexture)
+	
 	map.recalculate();
 
 	std::ifstream file;
