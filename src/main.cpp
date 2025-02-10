@@ -311,7 +311,7 @@ int loadLevel()
 
 	mapSize = size;
 
-	int mapT[500*500];
+	bool mapT[500*500];
 
 	for (unsigned int i = 0; i < 500; ++i) {
 		for (unsigned int j = 0; j < 500; ++j) {
@@ -535,6 +535,29 @@ TileMap::TileMap(bool* map, sf::Texture& Texture)
 		for (unsigned int j = 0; j < height; ++j)
 		{
 			this->map[(i + j * width)] = map[i + j * width];
+		}
+	}
+
+	recalculate();
+
+	return;
+}
+
+TileMap::TileMap()
+{
+	TextureMap = dirt;
+
+	int height = 500, width = 500;
+	sf::Vector2u tileSize = { 5,5 };
+
+	m_vertices.setPrimitiveType(sf::Triangles);
+	m_vertices.resize(500 * 500 * 6);
+
+	for (unsigned int i = 0; i < width; ++i)
+	{
+		for (unsigned int j = 0; j < height; ++j)
+		{
+			this->map[(i + j * width)] = false;
 		}
 	}
 
