@@ -56,9 +56,9 @@ public:
 	sf::VertexArray m_vertices;
 	std::vector<int> pointsI;
 	std::vector<int> wallsI;
-	sf::Texture& TextureMap;
+	sf::Texture TextureMap;
 	bool map[500*500];
-	TileMap(bool* map, sf::Texture& Texture);
+	TileMap(bool* map, sf::Texture Texture);
 	TileMap();
 	void draw(sf::RenderWindow& window);
 	void recalculate();
