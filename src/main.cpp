@@ -333,7 +333,7 @@ int loadLevel()
 		}
 	}
 
-	map = TileMap(mapT, mapTexture)
+	map = TileMap(mapT, mapTexture);
 	
 	map.recalculate();
 
@@ -521,7 +521,7 @@ void Polygon::draw(sf::RenderWindow& window)
 	window.draw(shape);
 }
 
-TileMap::TileMap(bool* map, sf::Texture& Texture)
+TileMap::TileMap(bool* map, sf::Texture Texture)
 {
 	TextureMap = Texture;
 	int height = 1000 / 5, width = 1000 / 5;
