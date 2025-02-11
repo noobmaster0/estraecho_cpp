@@ -64,7 +64,7 @@ int main()
 		return 1;
 	}
 
-	if (!dirt.loadFromFile("resources/dirt.png"))
+	if (!dirt.loadFromFile("resources/TileMap.png"))
 		return 1;
 	dirt.setRepeated(true);
 
@@ -82,8 +82,6 @@ int main()
 	sf::Text test("", font, 30);
 
 	sf::View cam({ 200,200 }, { 1000,1000 });
-
-	map.TextureMap = dirt;
 
 	loadLevel();
 
@@ -299,14 +297,6 @@ int loadLevel()
 		return 1;
 	}
 
-	sf::Texture mapTexture;
-	if (!mapTexture.loadFromFile("resources/" + std::to_string(lvlCtr) + "/TileMap.png"))
-	{
-		return 1;
-	}
-	
-	map.TextureMap = mapTexture;
-
 	sf::Vector2u size = sf::Vector2u(mapMask.getSize().x, mapMask.getSize().y);
 
 	mapSize = size;
@@ -334,7 +324,7 @@ int loadLevel()
 		}
 	}
 
-	map = TileMap(mapT, mapTexture);
+	map = TileMap(mapT);
 	
 	map.recalculate();
 
@@ -524,9 +514,8 @@ void Polygon::draw(sf::RenderWindow& window)
 	window.draw(shape);
 }
 
-TileMap::TileMap(int* map, sf::Texture Texture)
+TileMap::TileMap(int* map)
 {
-	TextureMap = Texture;
 	int height = 300, width = 300;
 
 	m_vertices.setPrimitiveType(sf::Triangles);
@@ -547,7 +536,6 @@ TileMap::TileMap(int* map, sf::Texture Texture)
 
 TileMap::TileMap()
 {
-	TextureMap = dirt;
 
 	int height = 300, width = 300;
 	sf::Vector2u tileSize = { 5,5 };
@@ -571,7 +559,7 @@ TileMap::TileMap()
 void TileMap::draw(sf::RenderWindow& window)
 {
 	sf::RenderStates states;
-	states.texture = &TextureMap;
+	states.texture = &dirt;
 
 	window.draw(m_vertices, states);
 }
