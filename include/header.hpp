@@ -57,8 +57,8 @@ public:
 	std::vector<int> pointsI;
 	std::vector<int> wallsI;
 	sf::Texture TextureMap;
-	bool map[500*500];
-	TileMap(bool* map, sf::Texture Texture);
+	int map[300*300];
+	TileMap(int* map, sf::Texture Texture);
 	TileMap();
 	void draw(sf::RenderWindow& window);
 	void recalculate();

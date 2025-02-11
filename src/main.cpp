@@ -165,9 +165,9 @@ int main()
 			polygon.draw(window);
 		}
 
-		//for (auto& wall : walls) {
-		//	wall.draw(window);
-		//}
+		for (auto& wall : walls) {
+			wall.draw(window);
+		}
 
 		for (auto& wall : walls) {
 			wall.closestPoint(player, dt);
@@ -311,24 +311,25 @@ int loadLevel()
 
 	mapSize = size;
 
-	bool mapT[500*500];
+	int* mapT = new int[300*300];
 
-	for (unsigned int i = 0; i < 500; ++i) {
-		for (unsigned int j = 0; j < 500; ++j) {
+
+	for (unsigned int i = 0; i < 300; ++i) {
+		for (unsigned int j = 0; j < 300; ++j) {
 			if (i < size.x && j < size.y)
 			{
 				if (mapMask.getPixel(i, j).r <= 255 / 2 && mapMask.getPixel(i, j).g <= 255 / 2 && mapMask.getPixel(i, j).b <= 255 / 2)
 				{
-					mapT[i + j * 500] = false;
+					mapT[i + j * 300] = 0;
 				}
 				else
 				{
-					mapT[i + j * 500] = true;
+					mapT[i + j * 300] = 1;
 				}
 			}
 			else
 			{
-				mapT[i + j * 500] = false;
+				mapT[i + j * 300] = 0;
 			}
 		}
 	}
@@ -336,6 +337,8 @@ int loadLevel()
 	map = TileMap(mapT, mapTexture);
 	
 	map.recalculate();
+
+	delete mapT;
 
 	std::ifstream file;
 	file.open("resources/" + std::to_string(lvlCtr) + "/lvl.txt");
@@ -521,11 +524,10 @@ void Polygon::draw(sf::RenderWindow& window)
 	window.draw(shape);
 }
 
-TileMap::TileMap(bool* map, sf::Texture Texture)
+TileMap::TileMap(int* map, sf::Texture Texture)
 {
 	TextureMap = Texture;
-	int height = 1000 / 5, width = 1000 / 5;
-	sf::Vector2u tileSize = { 5,5 };
+	int height = 300, width = 300;
 
 	m_vertices.setPrimitiveType(sf::Triangles);
 	m_vertices.resize(1000 / 5 * 1000 / 5 * 6);
@@ -547,11 +549,11 @@ TileMap::TileMap()
 {
 	TextureMap = dirt;
 
-	int height = 500, width = 500;
+	int height = 300, width = 300;
 	sf::Vector2u tileSize = { 5,5 };
 
 	m_vertices.setPrimitiveType(sf::Triangles);
-	m_vertices.resize(500 * 500 * 6);
+	m_vertices.resize(300 * 300 * 6);
 
 	for (unsigned int i = 0; i < width; ++i)
 	{
@@ -575,7 +577,7 @@ void TileMap::draw(sf::RenderWindow& window)
 }
 
 void TileMap::recalculate() {
-	int height = 500, width = 500;
+	int height = 300, width = 300;
 	sf::Vector2u tileSize = { cellSize, cellSize };
 	// Resize vertex array to accommodate triangles
 	m_vertices.clear();
