@@ -38,6 +38,7 @@ std::vector<Polygon> polygons;
 std::vector<Wall> walls;
 std::vector<Point> points;
 std::vector<Button> buttons;
+std::vector<Creature> creatures;
 TileMap map;
 Player player(25.f,sf::Vector2f(75,50));
 
@@ -84,6 +85,8 @@ int main()
 	sf::View cam({ 200,200 }, { 1000,1000 });
 
 	loadLevel();
+
+	creatures.emplace_back(25, sf::Vector2f({300,300}));
 
 
 	sf::CircleShape soundCircle(50);
@@ -179,13 +182,15 @@ int main()
 		player.update(dt, window);
 		player.draw(window);
 
-		for (auto& button : buttons)
+		for (auto& creature : creatures)
 		{
-			button.update(window);
+			creature.update(dt, window);
+			creature.draw(window);
 		}
 
 		for (auto& button : buttons)
 		{
+			button.update(window);
 			button.draw(window);
 		}
 
@@ -390,12 +395,21 @@ int loadLevel()
 	return 0;
 }
 
-Player::Player(float radius, sf::Vector2f position)
+Object::Object(float radius, sf::Vector2f position)
 {
-	//wallI = nullptr;
 	shape = sf::CircleShape(radius);
 	this->radius = radius;
 	shape.setPosition(position);
+}
+
+void Object::draw(sf::RenderWindow& window)
+{
+	window.draw(this->shape);
+}
+
+void Object::update(float dt, sf::RenderWindow& window)
+{
+	shape.setPosition(shape.getPosition() + velocity * dt * (float)PPM);
 }
 
 void Player::update(float dt, sf::RenderWindow& window)
@@ -403,9 +417,20 @@ void Player::update(float dt, sf::RenderWindow& window)
 	shape.setPosition(shape.getPosition() + velocity * dt * (float)PPM);
 }
 
-void Player::draw(sf::RenderWindow& window)
+void Creature::update(float dt, sf::RenderWindow& window)
 {
-	window.draw(shape);
+
+	if (distsq(shape.getPosition(), player.shape.getPosition()) <= sound * sound || cooldown >= 0)
+	{
+		if (distsq(shape.getPosition(), player.shape.getPosition()) <= sound * sound)
+		{
+			cooldown = 5.f;
+		}
+		velocity = (shape.getPosition() - player.shape.getPosition()) / dist(player.shape.getPosition(), shape.getPosition()) * 5.f;
+	}
+
+	shape.setPosition(shape.getPosition() + velocity * dt * (float)PPM);
+	cooldown -= dt;
 }
 
 Wall::Wall(sf::Vector2f p1, sf::Vector2f p2)
@@ -428,7 +453,7 @@ void Wall::draw(sf::RenderWindow& window)
 	window.draw(shape);
 }
 
-sf::Vector2f Wall::closestPoint(Player& ball, float dt)
+sf::Vector2f Wall::closestPoint(Object& ball, float dt)
 {
 	if (!exists) return sf::Vector2f(-100,-100);
 	sf::Vector2f other = ball.shape.getPosition() + sf::Vector2f(ball.radius, ball.radius);
@@ -467,7 +492,7 @@ Point::Point(sf::Vector2f positon)
 	this->position = positon;
 }
 
-void Point::collide(Player& ball, float dt)
+void Point::collide(Object& ball, float dt)
 {
 	sf::Vector2f other = ball.shape.getPosition() + sf::Vector2f(ball.radius, ball.radius);
 

@@ -3,12 +3,22 @@ float distsq(sf::Vector2f p1, sf::Vector2f p2);
 size_t split(const std::string& txt, std::vector<std::string>& strs, char ch);
 int loadLevel();
 
-class Player
+class Object
 {
 public:
-	Player(float radius, sf::Vector2f position);
+	Object(float radius, sf::Vector2f position);
 	void update(float dt, sf::RenderWindow& window);
 	void draw(sf::RenderWindow& window);
+	sf::Vector2f velocity;
+	sf::CircleShape shape;
+	float radius;
+};
+
+class Player : public Object
+{
+public:
+	using Object::Object;
+	void update(float dt, sf::RenderWindow& window);
 	enum class AState {
 		WALKINGUP,
 		WALKINGDOWN,
@@ -16,9 +26,14 @@ public:
 		WALKINGRIGHT,
 		IDLE
 	};
-	sf::Vector2f velocity;
-	sf::CircleShape shape;
-	float radius;
+};
+
+class Creature : public Object
+{
+public:
+	using Object::Object;
+	void update(float dt, sf::RenderWindow& window);
+	float cooldown = 0;
 };
 
 class Wall
@@ -31,7 +46,7 @@ public:
 	bool exists = true;
 	Wall(sf::Vector2f p1, sf::Vector2f p2);
 	void draw(sf::RenderWindow& window);
-	sf::Vector2f closestPoint(Player& ball, float dt);
+	sf::Vector2f closestPoint(Object& ball, float dt);
 };
 
 class Point
@@ -39,7 +54,7 @@ class Point
 public:
 	sf::Vector2f position;
 	Point(sf::Vector2f position);
-	void collide(Player& ball, float dt);
+	void collide(Object& ball, float dt);
 };
 
 class Polygon
