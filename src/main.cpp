@@ -87,6 +87,7 @@ int main()
 	loadLevel();
 
 	creatures.emplace_back(25, sf::Vector2f({300,300}));
+	creatures.back().shape.setFillColor(sf::Color::Red);
 
 
 	sf::CircleShape soundCircle(50);
@@ -172,11 +173,19 @@ int main()
 
 		for (auto& wall : walls) {
 			wall.closestPoint(player, dt);
+			for (auto& creature : creatures)
+			{
+				wall.closestPoint(creature, dt);
+			}
 		}
 
 		for (auto& point : points)
 		{
 			point.collide(player, dt);
+			for (auto& creature : creatures)
+			{
+				point.collide(creature, dt);
+			}
 		}
 
 		player.update(dt, window);
@@ -210,7 +219,7 @@ int main()
 		}
 		*/
 
-		sound = dist({ 0,0 }, player.velocity) * 30;
+		sound = dist({ 0,0 }, player.velocity) * 30 + 2*PPM;
 
 		soundCircle.setRadius(sound);
 		soundCircle.setOrigin(sound,sound);
@@ -420,13 +429,17 @@ void Player::update(float dt, sf::RenderWindow& window)
 void Creature::update(float dt, sf::RenderWindow& window)
 {
 
-	if (distsq(shape.getPosition(), player.shape.getPosition()) <= sound * sound || cooldown >= 0)
+	if (distsq(shape.getPosition(), player.shape.getPosition()) <= (sound+this->radius) * (sound + this->radius) || cooldown >= 0)
 	{
-		if (distsq(shape.getPosition(), player.shape.getPosition()) <= sound * sound)
+		if (distsq(shape.getPosition(), player.shape.getPosition()) <= (sound + this->radius) * (sound + this->radius))
 		{
 			cooldown = 5.f;
 		}
-		velocity = (shape.getPosition() - player.shape.getPosition()) / dist(player.shape.getPosition(), shape.getPosition()) * 5.f;
+		velocity = -(shape.getPosition() - player.shape.getPosition()) / dist(player.shape.getPosition(), shape.getPosition()) * playerSpeed * 1.25f;
+	}
+	else
+	{
+		velocity = { 0,0 };
 	}
 
 	shape.setPosition(shape.getPosition() + velocity * dt * (float)PPM);
@@ -453,7 +466,7 @@ void Wall::draw(sf::RenderWindow& window)
 	window.draw(shape);
 }
 
-sf::Vector2f Wall::closestPoint(Object& ball, float dt)
+sf::Vector2f Wall::closestPoint(Object& ball, float dt) const
 {
 	if (!exists) return sf::Vector2f(-100,-100);
 	sf::Vector2f other = ball.shape.getPosition() + sf::Vector2f(ball.radius, ball.radius);
@@ -475,7 +488,14 @@ sf::Vector2f Wall::closestPoint(Object& ball, float dt)
 		dist(p1, closeP) + dist(p2, closeP) == dist(p1, p2))
 	{
 		sf::Vector2f normal = (other - closeP);
-		normal = normal / dist(sf::Vector2f(0, 0), normal);
+		if (dist(sf::Vector2f(0, 0), normal) == 0)
+		{
+			return closeP;
+		}
+		else
+		{
+			normal = normal / dist(sf::Vector2f(0, 0), normal);
+		}
 		ball.shape.setPosition(closeP + normal * ball.radius - sf::Vector2f(ball.radius, ball.radius));
 		
 		float normalComponent = (ball.velocity.x * normal.x + ball.velocity.y * normal.y);

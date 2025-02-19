@@ -46,7 +46,7 @@ public:
 	bool exists = true;
 	Wall(sf::Vector2f p1, sf::Vector2f p2);
 	void draw(sf::RenderWindow& window);
-	sf::Vector2f closestPoint(Object& ball, float dt);
+	sf::Vector2f closestPoint(Object& ball, float dt) const;
 };
 
 class Point
