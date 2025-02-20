@@ -18,7 +18,7 @@ class Player : public Object
 {
 public:
 	using Object::Object;
-	void update(float dt, sf::RenderWindow& window);
+	void update(float dt, sf::RenderWindow& window, sf::Texture& character);
 	enum class AState {
 		WALKINGUP,
 		WALKINGDOWN,

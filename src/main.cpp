@@ -197,7 +197,7 @@ int main()
 			}
 		}
 
-		player.update(dt, window);
+		player.update(dt, window, character);
 		player.draw(window);
 
 		for (auto& creature : creatures)
@@ -434,7 +434,7 @@ void Object::update(float dt, sf::RenderWindow& window)
 	shape.setPosition(shape.getPosition() + velocity * dt * (float)PPM);
 }
 
-void Player::update(float dt, sf::RenderWindow& window)
+void Player::update(float dt, sf::RenderWindow& window, sf::Texture& character)
 {
 	shape.setTexture(character);
 	shape.setScale(50.f / 16, 50.f / 16);
