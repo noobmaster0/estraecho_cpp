@@ -62,8 +62,8 @@ jobs:
         endif()
     - name: Install SFML dependencies
       run: |
-        sudo apt-get update
-        sudo apt-get install -y libsfml-dev
+        apt-get update
+        apt-get install -y libsfml-dev
 
     - name: Configure
       shell: cmake -P {0}
