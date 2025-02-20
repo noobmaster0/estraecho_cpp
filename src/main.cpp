@@ -89,12 +89,13 @@ int main()
 	creatures.emplace_back(25, sf::Vector2f({300,300}));
 	//creatures.back().shape.setFillColor(sf::Color::Red);
 
-
+#ifdef debug
 	sf::CircleShape soundCircle(50);
 	soundCircle.setOutlineColor(sf::Color::Red);
 	soundCircle.setOutlineThickness(1);
 	soundCircle.setFillColor(sf::Color::Transparent);
 	soundCircle.setOrigin(25, 25);
+#endif
 
 	float dt = 0;
 	sf::Clock clock;
@@ -176,9 +177,11 @@ int main()
 			polygon.draw(window);
 		}
 
+#ifdef debug
 		for (auto& wall : walls) {
 			wall.draw(window);
 		}
+#endif
 
 		for (auto& wall : walls) {
 			wall.closestPoint(player, dt);
@@ -230,10 +233,12 @@ int main()
 
 		sound = dist({ 0,0 }, player.velocity) * 30 + 2*PPM;
 
+#ifdef debug
 		soundCircle.setRadius(sound);
 		soundCircle.setOrigin(sound,sound);
 		soundCircle.setPosition(player.shape.getPosition() + sf::Vector2f(1, 1) * r);
 		window.draw(soundCircle);
+#endif
 
 		sf::Vector2f playPos = player.shape.getPosition() + sf::Vector2f(1, 1) * r;
 		sf::Vector2f camPos = { 0, 0 };
