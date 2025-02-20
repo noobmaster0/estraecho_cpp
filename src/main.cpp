@@ -19,9 +19,6 @@
 #define cellSize 50
 #define TSS 16 // tile sprite size
 
-sf::Texture character;
-sf::Texture dirt;
-
 const float playerSpeed = 0.1f*PPM;
 int idCounter = 0;
 bool confineCam = true;
@@ -52,11 +49,14 @@ int main()
 #endif // APPLE
 
 
+	sf::Texture character;
+	sf::Texture dirt;
+
 	sf::RenderWindow window(sf::VideoMode(resX, resY), "Estra echo c++ edition (the faster one)");
 
 	sf::Font font;
 #ifdef __linux__
-	if (!font.loadFromFile("/usr/share/fonts/TTF/arial.ttf"))
+	if (!font.loadFromFile("resources/ARIAL.TTF"))
 #else 
 	if (!font.loadFromFile("C:/Windows/fonts/Arial.ttf"))
 #endif
@@ -169,7 +169,7 @@ int main()
 		mV *= pSpeed;
 		player.velocity += mV;
 
-		map.draw(window);
+		map.draw(window, dirt);
 
 		for (auto& polygon : polygons)
 		{
@@ -646,7 +646,7 @@ TileMap::TileMap()
 	return;
 }
 
-void TileMap::draw(sf::RenderWindow& window)
+void TileMap::draw(sf::RenderWindow& window, sf::Texture& dirt)
 {
 	sf::RenderStates states;
 	states.texture = &dirt;
