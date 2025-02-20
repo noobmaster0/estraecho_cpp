@@ -87,7 +87,7 @@ int main()
 	loadLevel();
 
 	creatures.emplace_back(25, sf::Vector2f({300,300}));
-	creatures.back().shape.setFillColor(sf::Color::Red);
+	//creatures.back().shape.setFillColor(sf::Color::Red);
 
 
 	sf::CircleShape soundCircle(50);
@@ -134,27 +134,36 @@ int main()
 		if (keyboard.isKeyPressed(sf::Keyboard::Key::W))
 		{
 			mV += sf::Vector2f(0, -1);
+			player.aState = Player::AState::WALKINGUP;
 		}
 
 		if (keyboard.isKeyPressed(sf::Keyboard::Key::S))
 		{
 			mV += sf::Vector2f(0, 1);
+			player.aState = Player::AState::WALKINGDOWN;
 		}
 
 		if (keyboard.isKeyPressed(sf::Keyboard::Key::D))
 		{
 			mV += sf::Vector2f(1, 0);
+			player.aState = Player::AState::WALKINGRIGHT;
 		}
 
 		if (keyboard.isKeyPressed(sf::Keyboard::Key::A))
 		{
 			mV += sf::Vector2f(-1, 0);
+			player.aState = Player::AState::WALKINGLEFT;
 		}
+
 
 		float l = dist({ 0,0 }, mV);
 		if (l != 0)
 		{
 			mV /= l;
+		}
+		else
+		{
+			player.aState = Player::AState::IDLE;
 		}
 		
 		mV *= pSpeed;
@@ -375,6 +384,10 @@ int loadLevel()
 				polygons.emplace_back(verticies);
 				verticies.clear();
 			}
+			else if (command == "e")
+			{
+				creatures.emplace_back(25, sf::Vector2f(std::stoi(tokens[1]), std::stoi(tokens[1])));
+			}
 			else if (command == "c")
 			{
 				if (tokens[1] == "t")
@@ -406,7 +419,7 @@ int loadLevel()
 
 Object::Object(float radius, sf::Vector2f position)
 {
-	shape = sf::CircleShape(radius);
+	shape = sf::Sprite();
 	this->radius = radius;
 	shape.setPosition(position);
 }
@@ -423,6 +436,38 @@ void Object::update(float dt, sf::RenderWindow& window)
 
 void Player::update(float dt, sf::RenderWindow& window)
 {
+	shape.setTexture(character);
+	shape.setScale(50.f / 16, 50.f / 16);
+	shape.setOrigin(8, 8);
+	if (this->aState == AState::IDLE)
+	{
+		// 0, 0
+		shape.setTextureRect(sf::IntRect(15, 14, 32, 32));
+	}
+	else if (this->aState == AState::WALKINGDOWN)
+	{
+		shape.setTextureRect(sf::IntRect(15 + int(walkframe) * 64, 270, 32, 32));
+	}
+	else if (this->aState == AState::WALKINGUP)
+	{
+		shape.setTextureRect(sf::IntRect(15 + int(walkframe) * 64, 333, 32, 32));
+	}
+	else if (this->aState == AState::WALKINGRIGHT)
+	{
+		shape.setTextureRect(sf::IntRect(15 + int(walkframe) * 64, 397, 32, 32));
+	}
+	else if (this->aState == AState::WALKINGLEFT)
+	{
+		shape.setTextureRect(sf::IntRect(15 + int(walkframe) * 64, 461, 32, 32));
+	}
+
+
+
+	walkframe+=dt*4;
+	if (walkframe >= 6)
+	{
+		walkframe = 0;
+	}
 	shape.setPosition(shape.getPosition() + velocity * dt * (float)PPM);
 }
 

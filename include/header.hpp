@@ -10,7 +10,7 @@ public:
 	void update(float dt, sf::RenderWindow& window);
 	void draw(sf::RenderWindow& window);
 	sf::Vector2f velocity;
-	sf::CircleShape shape;
+	sf::Sprite shape;
 	float radius;
 };
 
@@ -26,6 +26,8 @@ public:
 		WALKINGRIGHT,
 		IDLE
 	};
+	AState aState = AState::IDLE;
+	float walkframe = 0;
 };
 
 class Creature : public Object
