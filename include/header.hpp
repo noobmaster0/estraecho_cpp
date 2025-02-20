@@ -74,7 +74,7 @@ public:
 	int map[300*300];
 	TileMap(int* map);
 	TileMap();
-	void draw(sf::RenderWindow& window);
+	void draw(sf::RenderWindow& window, sf::Texture& dirt);
 	void recalculate();
 };
 
