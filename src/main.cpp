@@ -467,12 +467,13 @@ void Player::update(float dt, sf::RenderWindow& window, sf::Texture& character)
 	}
 
 
-
 	walkframe+=dt*4;
 	if (walkframe >= 6)
 	{
 		walkframe = 0;
 	}
+    velocity.y += 9.8;
+    
 	shape.setPosition(shape.getPosition() + velocity * dt * (float)PPM);
 }
 
