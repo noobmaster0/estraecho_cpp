@@ -13,6 +13,7 @@
 
 #include "header.hpp"
 
+
 #define resX 1000
 #define resY 1000
 #define PPM 50.f // pixels per meter
@@ -120,8 +121,7 @@ int main()
 		if (mouse.isButtonPressed(sf::Mouse::Button::Left))
 			player.shape.setPosition(mp - sf::Vector2f(1, 1) * r);
 
-
-		player.velocity = sf::Vector2f(0, 0);
+		player.velocity.x = 0;
 
 		float pSpeed = playerSpeed;
 
@@ -130,19 +130,7 @@ int main()
 			pSpeed *= 2;
 		}
 
-		sf::Vector2f mV = { 0,0 };
-
-		if (keyboard.isKeyPressed(sf::Keyboard::Key::W))
-		{
-			mV += sf::Vector2f(0, -1);
-			player.aState = Player::AState::WALKINGUP;
-		}
-
-		if (keyboard.isKeyPressed(sf::Keyboard::Key::S))
-		{
-			mV += sf::Vector2f(0, 1);
-			player.aState = Player::AState::WALKINGDOWN;
-		}
+		sf::Vector2f mV = {0,0};
 
 		if (keyboard.isKeyPressed(sf::Keyboard::Key::D))
 		{
@@ -156,17 +144,17 @@ int main()
 			player.aState = Player::AState::WALKINGLEFT;
 		}
 
-
-		float l = dist({ 0,0 }, mV);
-		if (l != 0)
-		{
-			mV /= l;
-		}
-		else
+		if (mV.x == 0)
 		{
 			player.aState = Player::AState::IDLE;
 		}
-		
+
+		if (keyboard.isKeyPressed(sf::Keyboard::Key::Space) && player.onfloor)
+		{
+			player.velocity.y -= .5*PPM;
+			player.aState = Player::AState::JUMP;
+		}
+
 		mV *= pSpeed;
 		player.velocity += mV;
 
@@ -183,6 +171,13 @@ int main()
 		}
 #endif
 
+		test.setString("Onfloor: " + std::to_string(player.onfloor));
+		test.setPosition(cam.getInverseTransform().transformPoint(0,0));
+		window.draw(test);
+
+		player.update(dt, window, character);
+
+		player.onfloor = false;
 		for (auto& wall : walls) {
 			wall.closestPoint(player, dt);
 			for (auto& creature : creatures)
@@ -199,8 +194,6 @@ int main()
 				point.collide(creature, dt);
 			}
 		}
-
-		player.update(dt, window, character);
 		player.draw(window);
 
 		for (auto& creature : creatures)
@@ -443,19 +436,11 @@ void Player::update(float dt, sf::RenderWindow& window, sf::Texture& character)
 {
 	shape.setTexture(character);
 	shape.setScale(50.f / 16, 50.f / 16);
-	shape.setOrigin(8, 8);
+	shape.setOrigin(8, 12);
+
 	if (this->aState == AState::IDLE)
 	{
-		// 0, 0
-		shape.setTextureRect(sf::IntRect(15, 14, 32, 32));
-	}
-	else if (this->aState == AState::WALKINGDOWN)
-	{
-		shape.setTextureRect(sf::IntRect(15 + int(walkframe) * 64, 270, 32, 32));
-	}
-	else if (this->aState == AState::WALKINGUP)
-	{
-		shape.setTextureRect(sf::IntRect(15 + int(walkframe) * 64, 333, 32, 32));
+		shape.setTextureRect(sf::IntRect(15 + 0 * 64, 397, 32, 32));
 	}
 	else if (this->aState == AState::WALKINGRIGHT)
 	{
@@ -472,7 +457,7 @@ void Player::update(float dt, sf::RenderWindow& window, sf::Texture& character)
 	{
 		walkframe = 0;
 	}
-    velocity.y += 9.8;
+    velocity.y += .098;
     
 	shape.setPosition(shape.getPosition() + velocity * dt * (float)PPM);
 }
@@ -535,9 +520,17 @@ sf::Vector2f Wall::closestPoint(Object& ball, float dt) const
 		closeP = sf::Vector2f(x, y);
 	}
 
+	bool horizontal = false;
+
 	if (dist(closeP, ball.shape.getPosition() + sf::Vector2f(ball.radius, ball.radius)) <= ball.radius &&
 		dist(p1, closeP) + dist(p2, closeP) == dist(p1, p2))
 	{
+
+		if(this->floor)
+		{
+			player.onfloor = true;
+		}
+
 		sf::Vector2f normal = (other - closeP);
 		if (dist(sf::Vector2f(0, 0), normal) == 0)
 		{
@@ -713,6 +706,7 @@ void TileMap::recalculate() {
 			if (!above) { // Check above
 				walls.emplace_back(triangles[0].position, triangles[1].position);
 				wallsI.push_back(walls.size() - 1);
+				walls.back().floor = true;
 
 				// Check corners for top wall
 				if (!left) { // Top-left corner

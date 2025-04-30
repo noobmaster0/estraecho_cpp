@@ -20,14 +20,14 @@ public:
 	using Object::Object;
 	void update(float dt, sf::RenderWindow& window, sf::Texture& character);
 	enum class AState {
-		WALKINGUP,
-		WALKINGDOWN,
+		JUMP,
 		WALKINGLEFT,
 		WALKINGRIGHT,
 		IDLE
 	};
-	AState aState = AState::IDLE;
+	AState aState = AState::WALKINGLEFT;
 	float walkframe = 0;
+	bool onfloor = false;
 };
 
 class Creature : public Object
@@ -46,6 +46,7 @@ public:
 	sf::VertexArray shape;
 	int id;
 	bool exists = true;
+	bool floor = false;
 	Wall(sf::Vector2f p1, sf::Vector2f p2);
 	void draw(sf::RenderWindow& window);
 	sf::Vector2f closestPoint(Object& ball, float dt) const;
