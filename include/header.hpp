@@ -1,3 +1,18 @@
+#include <SFML/Graphics.hpp>
+#include <iostream>
+#include <vector>
+#include <fstream> 
+#include <string>
+#include <stdarg.h>
+#include <math.h>
+#include <functional>
+
+#include "imgui.h"
+#include "imgui-SFML.h"
+#include "imguiThemes.h"
+
+
+
 float dist(sf::Vector2f p1, sf::Vector2f p2);
 float distsq(sf::Vector2f p1, sf::Vector2f p2);
 size_t split(const std::string& txt, std::vector<std::string>& strs, char ch);

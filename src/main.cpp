@@ -7,6 +7,7 @@
 #include <math.h>
 #include <functional>
 
+#include "SFML/Graphics/Shader.hpp"
 #include "imgui.h"
 #include "imgui-SFML.h"
 #include "imguiThemes.h"
@@ -90,6 +91,7 @@ int main()
 	creatures.emplace_back(25, sf::Vector2f({300,300}));
 	//creatures.back().shape.setFillColor(sf::Color::Red);
 
+
 #ifdef debug
 	sf::CircleShape soundCircle(50);
 	soundCircle.setOutlineColor(sf::Color::Red);
@@ -97,6 +99,8 @@ int main()
 	soundCircle.setFillColor(sf::Color::Transparent);
 	soundCircle.setOrigin(25, 25);
 #endif
+
+	float jumpCooldown = 0;
 
 	float dt = 0;
 	sf::Clock clock;
@@ -126,9 +130,7 @@ int main()
 		float pSpeed = playerSpeed;
 
 		if (keyboard.isKeyPressed(sf::Keyboard::LShift))
-		{
 			pSpeed *= 2;
-		}
 
 		sf::Vector2f mV = {0,0};
 
@@ -149,8 +151,9 @@ int main()
 			player.aState = Player::AState::IDLE;
 		}
 
-		if (keyboard.isKeyPressed(sf::Keyboard::Key::Space) && player.onfloor)
+		if (keyboard.isKeyPressed(sf::Keyboard::Key::Space) && player.onfloor && jumpCooldown <= 0)
 		{
+			jumpCooldown = .25;
 			player.velocity.y -= .5*PPM;
 			player.aState = Player::AState::JUMP;
 		}
@@ -274,6 +277,10 @@ int main()
 
 		window.setView(cam);
 		window.display();
+		if(jumpCooldown > 0)
+		{
+			jumpCooldown -= dt;
+		}
 		dt = clock.restart().asSeconds();
 	}
 	return 0;
