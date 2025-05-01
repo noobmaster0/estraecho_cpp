@@ -21,7 +21,7 @@
 #define cellSize 50
 #define TSS 16 // tile sprite size
 
-const float playerSpeed = 0.1f*PPM;
+const float playerSpeed = 2500;
 int idCounter = 0;
 bool confineCam = true;
 
@@ -100,6 +100,8 @@ int main()
 	soundCircle.setOrigin(25, 25);
 #endif
 
+	window.setFramerateLimit(1000);
+
 	float jumpCooldown = 0;
 
 	float dt = 0;
@@ -123,7 +125,7 @@ int main()
 		float r = 25;
 
 		if (mouse.isButtonPressed(sf::Mouse::Button::Left))
-			player.shape.setPosition(mp - sf::Vector2f(1, 1) * r);
+			player.shape.setPosition(mp);
 
 		player.velocity.x = 0;
 
@@ -154,12 +156,12 @@ int main()
 		if (keyboard.isKeyPressed(sf::Keyboard::Key::Space) && player.onfloor && jumpCooldown <= 0)
 		{
 			jumpCooldown = .25;
-			player.velocity.y -= .5*PPM;
+			player.velocity.y -= 9.8;
 			player.aState = Player::AState::JUMP;
 		}
 
 		mV *= pSpeed;
-		player.velocity += mV;
+		player.velocity += mV * dt;
 
 		map.draw(window, dirt);
 
@@ -173,10 +175,6 @@ int main()
 			wall.draw(window);
 		}
 #endif
-
-		test.setString("Onfloor: " + std::to_string(player.onfloor));
-		test.setPosition(cam.getInverseTransform().transformPoint(0,0));
-		window.draw(test);
 
 		player.update(dt, window, character);
 
@@ -236,6 +234,11 @@ int main()
 		window.draw(soundCircle);
 #endif
 
+
+		test.setString("Onfloor: " + std::to_string(player.onfloor));
+		test.setPosition(cam.getInverseTransform().transformPoint(0,0));
+		window.draw(test);
+
 		sf::Vector2f playPos = player.shape.getPosition() + sf::Vector2f(1, 1) * r;
 		sf::Vector2f camPos = { 0, 0 };
 
@@ -277,6 +280,7 @@ int main()
 
 		window.setView(cam);
 		window.display();
+
 		if(jumpCooldown > 0)
 		{
 			jumpCooldown -= dt;
@@ -464,7 +468,7 @@ void Player::update(float dt, sf::RenderWindow& window, sf::Texture& character)
 	{
 		walkframe = 0;
 	}
-    velocity.y += .098;
+    velocity.y += 15 * dt;
     
 	shape.setPosition(shape.getPosition() + velocity * dt * (float)PPM);
 }
