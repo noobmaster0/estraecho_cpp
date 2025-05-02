@@ -88,7 +88,7 @@ int main()
 
 	loadLevel();
 
-	creatures.emplace_back(25, sf::Vector2f({300,300}));
+	//creatures.emplace_back(25, sf::Vector2f({300,300}));
 	//creatures.back().shape.setFillColor(sf::Color::Red);
 
 
@@ -181,27 +181,13 @@ int main()
 		player.onfloor = false;
 		for (auto& wall : walls) {
 			wall.closestPoint(player, dt);
-			for (auto& creature : creatures)
-			{
-				wall.closestPoint(creature, dt);
-			}
 		}
 
 		for (auto& point : points)
 		{
 			point.collide(player, dt);
-			for (auto& creature : creatures)
-			{
-				point.collide(creature, dt);
-			}
 		}
 		player.draw(window);
-
-		for (auto& creature : creatures)
-		{
-			creature.update(dt, window);
-			creature.draw(window);
-		}
 
 		for (auto& button : buttons)
 		{
@@ -537,11 +523,6 @@ sf::Vector2f Wall::closestPoint(Object& ball, float dt) const
 		dist(p1, closeP) + dist(p2, closeP) == dist(p1, p2))
 	{
 
-		if(this->floor)
-		{
-			player.onfloor = true;
-		}
-
 		sf::Vector2f normal = (other - closeP);
 		if (dist(sf::Vector2f(0, 0), normal) == 0)
 		{
@@ -556,6 +537,10 @@ sf::Vector2f Wall::closestPoint(Object& ball, float dt) const
 		float normalComponent = (ball.velocity.x * normal.x + ball.velocity.y * normal.y);
 		if (normalComponent < 0) {
 			ball.velocity = ball.velocity - normalComponent * normal;
+			if(this->floor)
+			{
+				player.onfloor = true;
+			}
 		}
 	}
 
