@@ -156,27 +156,31 @@ int main()
 
 		if (mV.x == 0)
 		{
-			if(player.aState == Player::AState::IDLELEFT || player.aState == Player::AState::WALKINGLEFT)
-			player.aState = Player::AState::IDLELEFT;
+			if(player.aState == Player::AState::WALKINGLEFT)
+			{
+				player.aState = Player::AState::IDLELEFT;
+			}
+			if(player.aState == Player::AState::WALKINGRIGHT){
+				player.aState = Player::AState::IDLERIGHT;
+			}
 		}
 
 		if (keyboard.isKeyPressed(sf::Keyboard::Key::Space) && player.onfloor && jumpCooldown <= 0)
 		{
 			jumpCooldown = .25;
 			player.velocity.y -= 9.98*1.4;
-			player.aState = Player::AState::JUMP;
 		}
 
 		if (keyboard.isKeyPressed(sf::Keyboard::Key::LShift) && touchedGround && dashCooldown <= 0)
 		{
 			dashCooldown = .25;
 			touchedGround = false;
-			if (mV.x == 0)
+			if (keyboard.isKeyPressed(sf::Keyboard::Key::D) || player.aState == Player::AState::IDLERIGHT)
 			{
 				player.dashV += 150;
 			}
-			else {
-				player.dashV += 150 * mV.x;
+			else if(keyboard.isKeyPressed(sf::Keyboard::Key::A)  || player.aState == Player::AState::IDLELEFT){
+				player.dashV -= 150;
 			}
 		}
 
@@ -466,9 +470,13 @@ void Player::update(float dt, sf::RenderWindow& window, sf::Texture& character)
 	shape.setScale(50.f / 16, 50.f / 16);
 	shape.setOrigin(8, 12);
 
-	if (this->aState == AState::IDLE)
+	if (this->aState == AState::IDLERIGHT)
 	{
 		shape.setTextureRect(sf::IntRect(15 + 0 * 64, 397, 32, 32));
+	}
+	if (this->aState == AState::IDLELEFT)
+	{
+		shape.setTextureRect(sf::IntRect(15 + 0 * 64, 461, 32, 32));
 	}
 	else if (this->aState == AState::WALKINGRIGHT)
 	{
