@@ -38,11 +38,13 @@ public:
 		JUMP,
 		WALKINGLEFT,
 		WALKINGRIGHT,
-		IDLE
+		IDLELEFT,
+		IDLERIGHT
 	};
 	AState aState = AState::WALKINGLEFT;
 	float walkframe = 0;
 	bool onfloor = false;
+	float dashV;
 };
 
 class Creature : public Object

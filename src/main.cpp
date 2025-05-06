@@ -8,6 +8,8 @@
 #include <functional>
 
 #include "SFML/Graphics/Shader.hpp"
+#include "SFML/System/Vector2.hpp"
+#include "SFML/Window/Keyboard.hpp"
 #include "imgui.h"
 #include "imgui-SFML.h"
 #include "imguiThemes.h"
@@ -103,6 +105,9 @@ int main()
 	window.setFramerateLimit(1000);
 
 	float jumpCooldown = 0;
+	float dashCooldown = 0;
+
+	bool touchedGround = false; // For dashing
 
 	float dt = 0;
 	sf::Clock clock;
@@ -127,12 +132,13 @@ int main()
 		if (mouse.isButtonPressed(sf::Mouse::Button::Left))
 			player.shape.setPosition(mp);
 
-		player.velocity.x = 0;
 
 		float pSpeed = playerSpeed;
 
-		if (keyboard.isKeyPressed(sf::Keyboard::LShift))
-			pSpeed *= 2;
+		player.velocity.x = 0;
+
+		//remninent of running i just dont want to change it.
+		pSpeed *= 2;
 
 		sf::Vector2f mV = {0,0};
 
@@ -150,14 +156,28 @@ int main()
 
 		if (mV.x == 0)
 		{
-			player.aState = Player::AState::IDLE;
+			if(player.aState == Player::AState::IDLELEFT || player.aState == Player::AState::WALKINGLEFT)
+			player.aState = Player::AState::IDLELEFT;
 		}
 
 		if (keyboard.isKeyPressed(sf::Keyboard::Key::Space) && player.onfloor && jumpCooldown <= 0)
 		{
 			jumpCooldown = .25;
-			player.velocity.y -= 9.8;
+			player.velocity.y -= 9.98*1.4;
 			player.aState = Player::AState::JUMP;
+		}
+
+		if (keyboard.isKeyPressed(sf::Keyboard::Key::LShift) && touchedGround && dashCooldown <= 0)
+		{
+			dashCooldown = .25;
+			touchedGround = false;
+			if (mV.x == 0)
+			{
+				player.dashV += 150;
+			}
+			else {
+				player.dashV += 150 * mV.x;
+			}
 		}
 
 		mV *= pSpeed;
@@ -195,6 +215,11 @@ int main()
 			button.draw(window);
 		}
 
+		if(player.onfloor)
+		{
+			touchedGround = true;
+		}
+
 		/*
 		if (lemmingsRemaining <= 1 && lemmingsNum <= 1 && !outOfLevels)
 		{
@@ -221,7 +246,7 @@ int main()
 #endif
 
 
-		test.setString("Onfloor: " + std::to_string(player.onfloor));
+		test.setString("Has Dash: " + std::to_string(touchedGround));
 		test.setPosition(cam.getInverseTransform().transformPoint(0,0));
 		window.draw(test);
 
@@ -271,6 +296,12 @@ int main()
 		{
 			jumpCooldown -= dt;
 		}
+
+		if(dashCooldown > 0)
+		{
+			dashCooldown -= dt;
+		}
+
 		dt = clock.restart().asSeconds();
 	}
 	return 0;
@@ -454,9 +485,10 @@ void Player::update(float dt, sf::RenderWindow& window, sf::Texture& character)
 	{
 		walkframe = 0;
 	}
-    velocity.y += 15 * dt;
-    
-	shape.setPosition(shape.getPosition() + velocity * dt * (float)PPM);
+    velocity.y += 30 * dt;
+
+	shape.setPosition(shape.getPosition() + sf::Vector2f(dashV,0) * dt * float(PPM) + velocity * dt * (float)PPM);
+	dashV -= dashV * .05;
 }
 
 void Creature::update(float dt, sf::RenderWindow& window)
