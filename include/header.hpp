@@ -44,6 +44,7 @@ public:
 	AState aState = AState::WALKINGLEFT;
 	float walkframe = 0;
 	bool onfloor = false;
+	bool flipped = false;
 	float dashV;
 };
 

@@ -124,7 +124,7 @@ int main()
 				window.setSize(sf::Vector2u(resX, resY));
 			}
 		}
-		window.clear(sf::Color(0, 0, 0));
+		window.clear(sf::Color(0, 0, 255/2));
 
 		sf::Vector2f mp = window.mapPixelToCoords(mouse.getPosition(window));
 		float r = 25;
@@ -177,10 +177,10 @@ int main()
 			touchedGround = false;
 			if (keyboard.isKeyPressed(sf::Keyboard::Key::D) || player.aState == Player::AState::IDLERIGHT)
 			{
-				player.dashV += 150;
+				player.dashV += 50;
 			}
 			else if(keyboard.isKeyPressed(sf::Keyboard::Key::A)  || player.aState == Player::AState::IDLELEFT){
-				player.dashV -= 150;
+				player.dashV -= 50;
 			}
 		}
 
@@ -467,36 +467,67 @@ void Object::update(float dt, sf::RenderWindow& window)
 void Player::update(float dt, sf::RenderWindow& window, sf::Texture& character)
 {
 	shape.setTexture(character);
-	shape.setScale(50.f / 16, 50.f / 16);
-	shape.setOrigin(8, 12);
+	//shape.setScale(50.f / 16, 50.f / 16);
+	//shape.setOrigin(8, 12);
 
 	if (this->aState == AState::IDLERIGHT)
 	{
-		shape.setTextureRect(sf::IntRect(15 + 0 * 64, 397, 32, 32));
+		flipped = false;
+		shape.setTextureRect(sf::IntRect(0 + int(walkframe) * 32, 0, 32, 64));
 	}
 	if (this->aState == AState::IDLELEFT)
 	{
-		shape.setTextureRect(sf::IntRect(15 + 0 * 64, 461, 32, 32));
+		flipped = true;
+		shape.setTextureRect(sf::IntRect(0 + int(walkframe) * 32, 0, 32, 64));
 	}
 	else if (this->aState == AState::WALKINGRIGHT)
 	{
-		shape.setTextureRect(sf::IntRect(15 + int(walkframe) * 64, 397, 32, 32));
+		flipped = false;
+		shape.setTextureRect(sf::IntRect(0 + int((walkframe/6)*4) * 32, 64, 32, 64));
 	}
 	else if (this->aState == AState::WALKINGLEFT)
 	{
-		shape.setTextureRect(sf::IntRect(15 + int(walkframe) * 64, 461, 32, 32));
+		flipped = true;
+		shape.setTextureRect(sf::IntRect(0 + int((walkframe/6)*4) * 32, 64, 32, 64));
 	}
 
+	if(velocity.y > 1)
+	{
+		shape.setTextureRect(sf::IntRect(0 + 24 * int((walkframe/6 * 4)), 183, 24, 64));
 
-	walkframe+=dt*4;
+	}
+
+	if(velocity.y < 1 && !onfloor)
+	{
+		shape.setTextureRect(sf::IntRect(0 + 15 * int((walkframe/6 * 4)), 245, 15, 64));
+	}
+
+	if(abs(dashV) > 1)
+	{
+		shape.setTextureRect(sf::IntRect(0, 183, 24, 64));
+	}
+
+	walkframe+=dt*10;
 	if (walkframe >= 6)
 	{
 		walkframe = 0;
 	}
+
+	float size = 50;
+	if(flipped)
+	{
+		shape.setScale(-50.f / 16, 50.f / 16);
+		shape.setOrigin(shape.getLocalBounds().width/2, shape.getLocalBounds().height*3/4 - 4);
+	}
+	else {
+		shape.setScale(50.f / 16, 50.f / 16);
+		shape.setOrigin(shape.getLocalBounds().width/2, shape.getLocalBounds().height*3/4 - 4);
+	}
+
     velocity.y += 30 * dt;
 
 	shape.setPosition(shape.getPosition() + sf::Vector2f(dashV,0) * dt * float(PPM) + velocity * dt * (float)PPM);
-	dashV -= dashV * .05;
+	dashV -= dashV * .02;
 }
 
 void Creature::update(float dt, sf::RenderWindow& window)
@@ -542,7 +573,7 @@ void Wall::draw(sf::RenderWindow& window)
 sf::Vector2f Wall::closestPoint(Object& ball, float dt) const
 {
 	if (!exists) return sf::Vector2f(-100,-100);
-	sf::Vector2f other = ball.shape.getPosition() + sf::Vector2f(ball.radius, ball.radius);
+	sf::Vector2f other = ball.shape.getPosition();
 	float m = (p2.y - p1.y) / (p2.x - p1.x);
 
 	sf::Vector2f closeP;
@@ -559,7 +590,7 @@ sf::Vector2f Wall::closestPoint(Object& ball, float dt) const
 
 	bool horizontal = false;
 
-	if (dist(closeP, ball.shape.getPosition() + sf::Vector2f(ball.radius, ball.radius)) <= ball.radius &&
+	if (dist(closeP, ball.shape.getPosition()) <= ball.radius &&
 		dist(p1, closeP) + dist(p2, closeP) == dist(p1, p2))
 	{
 
@@ -572,7 +603,7 @@ sf::Vector2f Wall::closestPoint(Object& ball, float dt) const
 		{
 			normal = normal / dist(sf::Vector2f(0, 0), normal);
 		}
-		ball.shape.setPosition(closeP + normal * ball.radius - sf::Vector2f(ball.radius, ball.radius));
+		ball.shape.setPosition(closeP + normal * ball.radius);
 		
 		float normalComponent = (ball.velocity.x * normal.x + ball.velocity.y * normal.y);
 		if (normalComponent < 0) {
@@ -594,7 +625,7 @@ Point::Point(sf::Vector2f positon)
 
 void Point::collide(Object& ball, float dt)
 {
-	sf::Vector2f other = ball.shape.getPosition() + sf::Vector2f(ball.radius, ball.radius);
+	sf::Vector2f other = ball.shape.getPosition();
 
 	// Check collision with endpoints
 	if (distsq(position, other) <= ball.radius * ball.radius)
