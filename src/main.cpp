@@ -10,9 +10,7 @@
 #include "SFML/Graphics/Shader.hpp"
 #include "SFML/System/Vector2.hpp"
 #include "SFML/Window/Keyboard.hpp"
-#include "imgui.h"
-#include "imgui-SFML.h"
-#include "imguiThemes.h"
+
 
 #include "header.hpp"
 
@@ -381,7 +379,7 @@ int loadLevel()
 	
 	map.recalculate();
 
-	delete mapT;
+	delete[] mapT;
 
 	std::ifstream file;
 	file.open("resources/" + std::to_string(lvlCtr) + "/lvl.txt");

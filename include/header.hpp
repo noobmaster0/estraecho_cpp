@@ -1,15 +1,9 @@
 #include <SFML/Graphics.hpp>
-#include <iostream>
 #include <vector>
-#include <fstream> 
 #include <string>
 #include <stdarg.h>
 #include <math.h>
 #include <functional>
-
-#include "imgui.h"
-#include "imgui-SFML.h"
-#include "imguiThemes.h"
 
 
 
