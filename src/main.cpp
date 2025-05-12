@@ -122,7 +122,7 @@ int main()
 				window.setSize(sf::Vector2u(resX, resY));
 			}
 		}
-		window.clear(sf::Color(0, 0, 255/2));
+		window.clear(sf::Color(29, 33, 45));
 
 		sf::Vector2f mp = window.mapPixelToCoords(mouse.getPosition(window));
 		float r = 25;
