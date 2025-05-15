@@ -7,6 +7,7 @@
 #include <math.h>
 #include <functional>
 
+#include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/Shader.hpp"
 #include "SFML/System/Vector2.hpp"
 #include "SFML/Window/Keyboard.hpp"
@@ -29,6 +30,7 @@ sf::Vector2u mapSize = {500,500};
 
 int lvlCtr = 1;
 bool outOfLevels = false;
+bool doneWL = false;
 
 sf::Mouse mouse;
 sf::Keyboard keyboard;
@@ -40,6 +42,7 @@ std::vector<Button> buttons;
 std::vector<Creature> creatures;
 TileMap map;
 Player player(25.f,sf::Vector2f(75,50));
+End end;
 
 float sound = 0;
 
@@ -85,6 +88,11 @@ int main()
 	sf::Text test("", font, 30);
 
 	sf::View cam({ 200,200 }, { 1000,1000 });
+
+	//end.shape.setPosition(sf::Vector2f(400, 800));
+	end.shape.setTexture(door);
+	end.shape.setOrigin(end.shape.getLocalBounds().width/2,end.shape.getLocalBounds().height/2);
+	end.shape.setScale(sf::Vector2f(5,5));
 
 	loadLevel();
 
@@ -163,9 +171,9 @@ int main()
 			}
 		}
 
-		if (keyboard.isKeyPressed(sf::Keyboard::Key::Space) && player.onfloor && jumpCooldown <= 0)
+		if ((keyboard.isKeyPressed(sf::Keyboard::Key::Space) || keyboard.isKeyPressed(sf::Keyboard::Key::W))&& player.onfloor && jumpCooldown <= 0)
 		{
-			jumpCooldown = .25;
+			jumpCooldown = 1;
 			player.velocity.y -= 9.98*1.4;
 		}
 
@@ -187,6 +195,7 @@ int main()
 
 		map.draw(window, dirt);
 
+
 		for (auto& polygon : polygons)
 		{
 			polygon.draw(window);
@@ -204,6 +213,9 @@ int main()
 		for (auto& wall : walls) {
 			wall.closestPoint(player, dt);
 		}
+		
+		end.update(dt);
+		end.draw(window);
 
 		for (auto& point : points)
 		{
@@ -222,21 +234,16 @@ int main()
 			touchedGround = true;
 		}
 
-		/*
-		if (lemmingsRemaining <= 1 && lemmingsNum <= 1 && !outOfLevels)
+		
+		if (doneWL && !outOfLevels)
 		{
-			if (end.num >= .75 * lemmingsNumOg)
-			{
-				std::cout << "You win\n";
-				lvlCtr++;
-			}
-			else
-			{
-				std::cout << "You Loose\n";
-			}
+			std::cout << "You win\n";
+			lvlCtr++;
+			doneWL = false;
+		
 			loadLevel();
 		}
-		*/
+		
 
 		sound = dist({ 0,0 }, player.velocity) * 30 + 2*PPM;
 
@@ -247,10 +254,12 @@ int main()
 		window.draw(soundCircle);
 #endif
 
-
-		test.setString("Has Dash: " + std::to_string(touchedGround));
-		test.setPosition(cam.getInverseTransform().transformPoint(0,0));
-		window.draw(test);
+		if(doneWL)
+		{
+			test.setString("Ur done bro 💀");
+			test.setPosition(cam.getInverseTransform().transformPoint(0,0));
+			window.draw(test);
+		}
 
 		sf::Vector2f playPos = player.shape.getPosition() + sf::Vector2f(1, 1) * r;
 		sf::Vector2f camPos = { 0, 0 };
@@ -354,6 +363,13 @@ int loadLevel()
 
 	int* mapT = new int[300*300];
 
+	for (unsigned int i = 0; i < 300; ++i) {
+		for (unsigned int j = 0; j < 300; ++j) {
+			map.map[i+j*300] = 0;
+		}
+	}
+
+	map.recalculate();
 
 	for (unsigned int i = 0; i < 300; ++i) {
 		for (unsigned int j = 0; j < 300; ++j) {
@@ -377,9 +393,11 @@ int loadLevel()
 
 	map = TileMap(mapT);
 	
-	map.recalculate();
 
 	delete[] mapT;
+
+
+	map.recalculate();
 
 	std::ifstream file;
 	file.open("resources/" + std::to_string(lvlCtr) + "/lvl.txt");
@@ -401,6 +419,10 @@ int loadLevel()
 			{
 				walls.emplace_back(sf::Vector2f(std::stoi(tokens[1]), std::stoi(tokens[2])), sf::Vector2f(std::stoi(tokens[3]), std::stoi(tokens[4])));
 			}
+			else if (command == "s")
+			{
+				player.shape.setPosition(sf::Vector2f(std::stoi(tokens[1]),std::stoi(tokens[2])));
+			}
 			else if (command == "p")
 			{
 				std::vector<sf::Vector2f> verticies;
@@ -412,10 +434,6 @@ int loadLevel()
 				polygons.emplace_back(verticies);
 				verticies.clear();
 			}
-			else if (command == "e")
-			{
-				creatures.emplace_back(25, sf::Vector2f(std::stoi(tokens[1]), std::stoi(tokens[1])));
-			}
 			else if (command == "c")
 			{
 				if (tokens[1] == "t")
@@ -426,6 +444,10 @@ int loadLevel()
 				{
 					confineCam = false;
 				}
+			}
+			else if (command == "e")
+			{
+				end.shape.setPosition(sf::Vector2f(0,.5)*PPM + sf::Vector2f(std::stoi(tokens[1])*PPM, std::stoi(tokens[2])*PPM));
 			}
 			else if (command == " " || command == "")
 			{ }
@@ -754,12 +776,9 @@ void TileMap::recalculate() {
 			triangles[4].position = sf::Vector2f((i + 1) * tileSize.x, j * tileSize.y);
 			triangles[5].position = sf::Vector2f((i + 1) * tileSize.x, (j + 1) * tileSize.y);
 
-			triangles[0].texCoords = sf::Vector2f( map[i + j * width] * TSS,map[i + j * width] * TSS );
-			triangles[1].texCoords = sf::Vector2f( (map[i + j * width] + 1) * TSS,map[i + j * width] * TSS );
-			triangles[2].texCoords = sf::Vector2f((map[i + j * width]) * TSS,(map[i + j * width] + 1) * TSS );
-			triangles[3].texCoords = sf::Vector2f((map[i + j * width]) * TSS,(map[i + j * width] + 1) * TSS );
-			triangles[4].texCoords = sf::Vector2f((map[i + j * width] + 1) * TSS,(map[i + j * width]) * TSS );
-			triangles[5].texCoords = sf::Vector2f((map[i + j * width] + 1) * TSS,(map[i + j * width] + 1) * TSS );
+			sf::Vector2f texPos = {2,1};
+
+			
 
 			// Store adjacent cell states
 			bool above = (j > 0) ? map[i + (j - 1) * width] : true;
@@ -772,15 +791,18 @@ void TileMap::recalculate() {
 				walls.emplace_back(triangles[0].position, triangles[1].position);
 				wallsI.push_back(walls.size() - 1);
 				walls.back().floor = true;
+				texPos = {2,0};
 
 				// Check corners for top wall
 				if (!left) { // Top-left corner
 					points.emplace_back(triangles[0].position);
 					pointsI.push_back(points.size() - 1);
+					texPos = {1,0};
 				}
 				if (!right) { // Top-right corner
 					points.emplace_back(triangles[1].position);
 					pointsI.push_back(points.size() - 1);
+					texPos = {3,0};
 				}
 			}
 
@@ -788,46 +810,68 @@ void TileMap::recalculate() {
 				walls.emplace_back(triangles[1].position, triangles[5].position);
 				wallsI.push_back(walls.size() - 1);
 
+				texPos = {3,1};
+
 				// Check corners for right wall
 				if (!above) { // Top-right corner
 					points.emplace_back(triangles[1].position);
 					pointsI.push_back(points.size() - 1);
+					texPos = {3,0};
 				}
 				if (!below) { // Bottom-right corner
 					points.emplace_back(triangles[5].position);
 					pointsI.push_back(points.size() - 1);
+					texPos = {3,2};
 				}
 			}
 
 			if (!below) { // Check below
 				walls.emplace_back(triangles[5].position, triangles[3].position);
 				wallsI.push_back(walls.size() - 1);
+				texPos = {2,2};
 
 				// Check corners for bottom wall
 				if (!right) { // Bottom-right corner
 					points.emplace_back(triangles[5].position);
 					pointsI.push_back(points.size() - 1);
+					texPos = {3,2};
 				}
 				if (!left) { // Bottom-left corner
 					points.emplace_back(triangles[3].position);
 					pointsI.push_back(points.size() - 1);
+					texPos = {1,2};
 				}
 			}
 
 			if (!left) { // Check left
 				walls.emplace_back(triangles[3].position, triangles[0].position);
 				wallsI.push_back(walls.size() - 1);
+				texPos = {1,1};
 
 				// Check corners for left wall
 				if (!below) { // Bottom-left corner
 					points.emplace_back(triangles[3].position);
 					pointsI.push_back(points.size() - 1);
+					texPos = {1,2};
 				}
 				if (!above) { // Top-left corner
 					points.emplace_back(triangles[0].position);
 					pointsI.push_back(points.size() - 1);
+					texPos = {1,0};
 				}
 			}
+
+			if(!above && !left && !right)
+			{
+				texPos = {0,1};
+			}
+
+			triangles[0].texCoords = (texPos-sf::Vector2f(1,1))*(float)TSS + sf::Vector2f( map[i + j * width] * TSS,map[i + j * width] * TSS );
+			triangles[1].texCoords = (texPos-sf::Vector2f(1,1))*(float)TSS + sf::Vector2f( (map[i + j * width] + 1) * TSS,map[i + j * width] * TSS );
+			triangles[2].texCoords = (texPos-sf::Vector2f(1,1))*(float)TSS + sf::Vector2f((map[i + j * width]) * TSS,(map[i + j * width] + 1) * TSS );
+			triangles[3].texCoords = (texPos-sf::Vector2f(1,1))*(float)TSS + sf::Vector2f((map[i + j * width]) * TSS,(map[i + j * width] + 1) * TSS );
+			triangles[4].texCoords = (texPos-sf::Vector2f(1,1))*(float)TSS + sf::Vector2f((map[i + j * width] + 1) * TSS,(map[i + j * width]) * TSS );
+			triangles[5].texCoords = (texPos-sf::Vector2f(1,1))*(float)TSS + sf::Vector2f((map[i + j * width] + 1) * TSS,(map[i + j * width] + 1) * TSS );
 		}
 	}
 }
@@ -868,4 +912,30 @@ void Button::update(sf::RenderWindow& window)
 		shape.setColor(color);
 	}
 
+}
+
+End::End(sf::Vector2f position, sf::Texture texture)
+{
+	shape = sf::Sprite(texture);
+	shape.setPosition(position);
+}
+
+void End::draw(sf::RenderWindow& window)
+{
+	collideCircle.setOrigin(collideCircle.getLocalBounds().width/2,collideCircle.getLocalBounds().height/2);
+	collideCircle.setPosition(shape.getPosition());
+	collideCircle.setOutlineColor(sf::Color::Red);
+	collideCircle.setRadius(2*PPM);
+	collideCircle.setOutlineThickness(1);
+	collideCircle.setFillColor(sf::Color::Transparent);
+	window.draw(shape);
+	// window.draw(collideCircle);
+}
+
+void End::update(float dt)
+{
+	if (distsq(player.shape.getPosition(), shape.getPosition() + sf::Vector2f(4, 8)) <= pow(2*PPM,2))
+	{
+		doneWL = true;	
+	}
 }

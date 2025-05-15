@@ -1,3 +1,4 @@
+#include "SFML/Graphics/CircleShape.hpp"
 #include <SFML/Graphics.hpp>
 #include <vector>
 #include <string>
@@ -103,4 +104,16 @@ public:
 	void draw(sf::RenderWindow& window);
 	void update(sf::RenderWindow& window);
 	std::function<void()> callback;
+};
+
+class End
+{
+public:
+	sf::Sprite shape;
+	sf::CircleShape collideCircle;
+	int num = 0;
+	End(sf::Vector2f positon, sf::Texture texture);
+	End() {};
+	void draw(sf::RenderWindow& window);
+	void update(float dt);
 };
